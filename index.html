@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="author" content="Nora Sadder" />
+    <meta name="description" content="TODO List" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+    <title>Nora's TODO List</title>
+    <link rel="stylesheet" href="index.css" type="text/css" />
+    <script src="index.js"></script>
+  </head>
+  <body onload="getTableData()">
+    <h1>TODO List</h1>
+
+    <form>
+      <input
+        type="text"
+        name="add new task"
+        placeholder="Add New Task .."
+        class="add-task"
+      />
+      <button id="addButton" type="button" onclick="addTask()">Add</button>
+      <input
+        type="text"
+        name="search task"
+        placeholder="Search tasks .."
+        class="full search-val"
+        oninput="searchTask()"
+      />
+    </form>
+
+    <table id="TODO-List">
+      <tr class="header">
+        <td>ID</td>
+        <td>TODO Description</td>
+
+        <td>User ID</td>
+
+        <td>Status</td>
+
+        <td>Actions</td>
+      </tr>
+    </table>
+    <footer>
+      <span>Total Tasks: &nbsp; </span>
+      <span id="totalTasks">0</span>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,124 @@
+html {
+  font-size: clamp(10px, 4vh, 16px);
+  color: black;
+}
+
+h1 {
+  font-size: 2rem;
+  text-align: center;
+  margin-top: 3%;
+}
+
+form {
+  display: grid;
+  justify-content: center;
+  grid-template-columns: 2fr 0.5fr;
+  width: 30%;
+  row-gap: 10px;
+  margin: auto;
+}
+
+input {
+  font-size: 0.9rem;
+  margin: 0;
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+button {
+  height: 100%;
+  width: 80%;
+  margin-left: 0;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.add-task {
+  width: 80%;
+  height: 80%;
+  margin: auto;
+}
+
+.full {
+  grid-column-start: 1;
+  grid-column-end: 3;
+}
+
+table {
+  width: 95%;
+  margin: auto;
+  margin-top: 3%;
+  text-align: center;
+  border-spacing: 0;
+}
+
+tr {
+  height: 50%;
+  line-height: 2.75rem;
+  font-size: 1.2rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+td {
+  border-bottom: 1px solid rgb(140, 140, 140);
+  margin: 0;
+  padding: 10px;
+}
+
+.header > td {
+  background-color: rgb(205, 205, 205);
+  border-bottom: none;
+}
+
+.actions > button {
+  display: inline-block;
+  height: 100%;
+  line-height: 1.75rem;
+  margin: 2%;
+}
+
+.deleteButton {
+  background-color: red;
+}
+
+#addButton {
+  background-color: red;
+}
+
+.doneButton {
+  background-color: rgb(66, 178, 66);
+}
+
+footer {
+  margin-top: 3%;
+  display: flex;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+@media all and (max-width: 1000px) {
+  form {
+    width: 60%;
+  }
+
+  tr {
+    line-height: 1.75rem;
+    font-size: 1rem;
+  }
+}
+
+@media all and (max-width: 700px) {
+  form {
+    width: 80%;
+  }
+
+  tr {
+    line-height: 1.5rem;
+    font-size: 0.8rem;
+  }
+}
