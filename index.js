@@ -28,7 +28,8 @@ async function getAPI() {
     status.className = "status";
 
     if (TODOelement["completed"] == true) {
-      status.innerHTML = "Completed";
+      status.innerHTML = "";
+      status.style.backgroundImage = "url('checkmark.png')";
     } else {
       status.innerHTML = "Pending";
     }
@@ -104,7 +105,8 @@ function completeTask() {
   let table = document.getElementById("TODO-List");
   let row = this.parentNode.parentNode.parentNode;
   let statusCell = row.getElementsByClassName("status")[0];
-  statusCell.innerHTML = "Completed";
+  statusCell.innerHTML = "";
+  statusCell.style.backgroundImage = "url('checkmark.png')";
   allElements = table.innerHTML;
   localStorage.setItem("tableData", allElements);
   localStorage.setItem("totalTasks", totalTasks);
