@@ -1,6 +1,51 @@
 let totalTasks = 0;
 let allElements;
 let nextID;
+let rowsPerPage = 5;
+let table;
+let rowCount, pageCount;
+let tr = [];
+let th;
+
+function paging() {
+  rowCount = table.rows.length;
+  let tableHead = table.rows[0];
+  th = tableHead ? table.rows[0].outerHTML : "";
+  pageCount = Math.ceil(rowCount / rowsPerPage);
+
+  for (i = 1, ii = 0; i < rowCount; i++, ii++) {
+    tr[ii] = table.rows[i].outerHTML;
+  }
+
+  pagination = document.getElementsByClassName("pagination")[0];
+  pagination.innerHTML = "<a>&laquo;</a>";
+  for (let i = 1; i < pageCount; i++) {
+    a = document.createElement("a");
+    a.innerHTML = i;
+    // a.ariaDisabled = "tuesomething";
+    a.onclick = () => {
+      dividePages(i);
+    };
+    console.log(a);
+    pagination.appendChild(a);
+  }
+  a = document.createElement("a");
+  a.innerHTML = "&raquo";
+  pagination.appendChild(a);
+}
+
+function dividePages(pageNumber) {
+  console.log("Clicked");
+  table.innerHTML = th;
+  for (
+    let i = (pageNumber - 1) * rowsPerPage;
+    i < pageNumber * rowsPerPage;
+    i++
+  ) {
+    table.innerHTML = table.innerHTML + tr[i];
+  }
+}
+
 getAPI();
 
 async function getAPI() {
@@ -9,10 +54,9 @@ async function getAPI() {
 
   let todoArr = result.todos;
 
-  let table, row, ID, todo, userID, status;
+  let row, ID, todo, userID, status;
   let actions, actionsDiv, deleteButton, doneButton;
   table = document.getElementById("TODO-List");
-
   for (let TODOelement of todoArr) {
     ID = document.createElement("td");
     ID.innerHTML = TODOelement["id"];
@@ -77,13 +121,15 @@ async function getAPI() {
   localStorage.setItem("tableData", allElements);
   localStorage.setItem("totalTasks", totalTasks);
   localStorage.setItem("nextID", nextID);
+  paging();
+  dividePages(1);
 }
 
 function getTableData() {
-  let table = document.getElementById("TODO-List");
   allElements = localStorage.getItem("tableData");
   totalTasks = localStorage.getItem("totalTasks");
   nextID = localStorage.getItem("nextID");
+  table = document.getElementById("TODO-List");
   //   console.log(allElements);
   table.innerHTML = allElements;
   document.getElementById("totalTasks").innerHTML = totalTasks;
@@ -95,11 +141,13 @@ function getTableData() {
   doneButtonsArr = document.getElementsByClassName("doneButton");
   for (let doneBTN of doneButtonsArr)
     doneBTN.addEventListener("click", completeTask);
+
+  paging();
+  dividePages(1);
 }
 
 function deleteTask() {
   let rowIndex = this.parentNode.parentNode.parentNode.rowIndex;
-  let table = document.getElementById("TODO-List");
   if (confirm("are you sure you want to delete this task?") === true) {
     table.deleteRow(rowIndex);
     totalTasks -= 1;
@@ -111,7 +159,6 @@ function deleteTask() {
 }
 
 function doneUndone() {
-  let table = document.getElementById("TODO-List");
   let row = this.parentNode.parentNode.parentNode;
   let doneButton = row.getElementsByClassName("doneButton")[0];
   if (doneButton.innerHTML === "Done") {
@@ -122,7 +169,6 @@ function doneUndone() {
 }
 
 function completeTask(pressedButton) {
-  let table = document.getElementById("TODO-List");
   let row = pressedButton.parentNode.parentNode.parentNode;
   let idCell = row.getElementsByClassName("ID")[0];
   let descCell = row.getElementsByClassName("todo")[0];
@@ -145,14 +191,12 @@ function addTask() {
   if (taskDescription === "") {
     alert("empty field");
   } else {
-    let table, row, ID, todo, userID, status;
+    let row, ID, todo, userID, status;
     let actions, actionsDiv, deleteButton, doneButton;
-    table = document.getElementById("TODO-List");
     ID = document.createElement("td");
     ID.innerHTML = nextID;
     ID.className = "ID";
     nextID++;
-    // alert(typeof nextID);
     todo = document.createElement("td");
     todo.innerHTML = taskDescription;
     todo.className = "todo";
@@ -203,7 +247,6 @@ function addTask() {
 }
 
 function searchTask() {
-  let table = document.getElementById("TODO-List");
   table.innerHTML = allElements;
   let tasksDescription = document.getElementsByClassName("todo");
   let searchValue = document.getElementsByClassName("search-val")[0].value;
@@ -227,7 +270,6 @@ function searchTask() {
 }
 
 function undone(pressedButton) {
-  let table = document.getElementById("TODO-List");
   let row = pressedButton.parentNode.parentNode.parentNode;
   let idCell = row.getElementsByClassName("ID")[0];
   let descCell = row.getElementsByClassName("todo")[0];

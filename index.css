@@ -70,9 +70,10 @@ td {
   padding: 0;
 }
 
-.header > td {
+th {
   background-color: rgb(205, 205, 205);
   border-bottom: none;
+  font-weight: lighter;
 }
 
 .actions > button {
@@ -100,6 +101,30 @@ td {
   background-origin: content-box;
   background-repeat: no-repeat;
   background-size: contain;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  padding: 5px;
+  margin-top: 2%;
+}
+
+.pagination a {
+  color: black;
+  padding: 8px 16px;
+  text-decoration: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.pagination a:active {
+  background-color: rgb(48, 50, 51);
+  color: white;
+}
+
+.pagination a:hover:not(.active) {
+  background-color: #ddd;
 }
 
 footer {
