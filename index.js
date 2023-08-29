@@ -1,7 +1,7 @@
 let totalTasks = 0;
 let allElements;
 let nextID;
-// getAPI();
+getAPI();
 
 async function getAPI() {
   let response = await fetch("https://dummyjson.com/todos");
@@ -16,6 +16,7 @@ async function getAPI() {
   for (let TODOelement of todoArr) {
     ID = document.createElement("td");
     ID.innerHTML = TODOelement["id"];
+    ID.className = "ID";
 
     todo = document.createElement("td");
     todo.innerHTML = TODOelement["todo"];
@@ -23,6 +24,7 @@ async function getAPI() {
 
     userID = document.createElement("td");
     userID.innerHTML = TODOelement["userId"];
+    userID.className = "userID";
 
     status = document.createElement("td");
     status.className = "status";
@@ -47,9 +49,13 @@ async function getAPI() {
     deleteButton.className = "deleteButton";
     deleteButton.addEventListener("click", deleteTask);
     doneButton = document.createElement("button");
-    doneButton.innerHTML = "Done";
+    if (status.innerHTML === "") {
+      doneButton.innerHTML = "Undone";
+    } else {
+      doneButton.innerHTML = "Done";
+    }
     doneButton.className = "doneButton";
-    doneButton.addEventListener("click", completeTask);
+    doneButton.addEventListener("click", doneUndone);
 
     actionsDiv.appendChild(deleteButton);
     actionsDiv.appendChild(doneButton);
@@ -101,11 +107,30 @@ function deleteTask() {
   }
 }
 
-function completeTask() {
+function doneUndone() {
   let table = document.getElementById("TODO-List");
   let row = this.parentNode.parentNode.parentNode;
+  let doneButton = row.getElementsByClassName("doneButton")[0];
+  if (doneButton.innerHTML === "Done") {
+    completeTask(this);
+  } else {
+    undone(this);
+  }
+}
+
+function completeTask(pressedButton) {
+  let table = document.getElementById("TODO-List");
+  let row = pressedButton.parentNode.parentNode.parentNode;
+  let idCell = row.getElementsByClassName("ID")[0];
+  let descCell = row.getElementsByClassName("todo")[0];
+  let uesrIDCell = row.getElementsByClassName("userID")[0];
   let statusCell = row.getElementsByClassName("status")[0];
+  let doneButton = row.getElementsByClassName("doneButton")[0];
+  doneButton.innerHTML = "Undone";
   statusCell.innerHTML = "";
+  idCell.style.textDecoration = "line-through";
+  descCell.style.textDecoration = "line-through";
+  uesrIDCell.style.textDecoration = "line-through";
   statusCell.style.backgroundImage = "url('checkmark.png')";
   allElements = table.innerHTML;
   localStorage.setItem("tableData", allElements);
@@ -122,6 +147,7 @@ function addTask() {
     table = document.getElementById("TODO-List");
     ID = document.createElement("td");
     ID.innerHTML = nextID;
+    ID.className = "ID";
     nextID++;
     // alert(typeof nextID);
     todo = document.createElement("td");
@@ -129,6 +155,7 @@ function addTask() {
     todo.className = "todo";
     userID = document.createElement("td");
     userID.innerHTML = 33;
+    userID.className = "userID";
     status = document.createElement("td");
     status.className = "status";
     status.innerHTML = "Pending";
@@ -147,7 +174,7 @@ function addTask() {
     doneButton = document.createElement("button");
     doneButton.innerHTML = "Done";
     doneButton.className = "doneButton";
-    doneButton.addEventListener("click", completeTask);
+    doneButton.addEventListener("click", doneUndone);
 
     actionsDiv.appendChild(deleteButton);
     actionsDiv.appendChild(doneButton);
@@ -189,4 +216,23 @@ function searchTask() {
     "<tr class='header'><td>ID</td><td>TODO Description</td><td>User ID</td><td>Status</td><td>Actions</td></tr>";
 
   table.innerHTML = table.innerHTML + tableNewElements;
+}
+
+function undone(pressedButton) {
+  let table = document.getElementById("TODO-List");
+  let row = pressedButton.parentNode.parentNode.parentNode;
+  let idCell = row.getElementsByClassName("ID")[0];
+  let descCell = row.getElementsByClassName("todo")[0];
+  let uesrIDCell = row.getElementsByClassName("userID")[0];
+  let statusCell = row.getElementsByClassName("status")[0];
+  let doneButton = row.getElementsByClassName("doneButton")[0];
+  doneButton.innerHTML = "Done";
+  statusCell.innerHTML = "Pending";
+  idCell.style.textDecoration = "none";
+  descCell.style.textDecoration = "none";
+  uesrIDCell.style.textDecoration = "none";
+  statusCell.style.backgroundImage = "";
+  allElements = table.innerHTML;
+  localStorage.setItem("tableData", allElements);
+  localStorage.setItem("totalTasks", totalTasks);
 }
