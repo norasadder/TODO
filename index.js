@@ -2,10 +2,14 @@ let totalTasks = 0;
 let allElements;
 let nextID;
 let rowsPerPage = 5;
+let pagesPerContainer = 5;
 let table;
 let rowCount, pageCount;
 let tr = [];
 let th;
+let pagesLoopsCounter = 1;
+let pagesLoopsCount;
+let pages = [];
 
 function paging() {
   rowCount = table.rows.length;
@@ -18,25 +22,38 @@ function paging() {
   }
 
   pagination = document.getElementsByClassName("pagination")[0];
-  pagination.innerHTML = "<a>&laquo;</a>";
+  pagination.innerHTML = "<a onclick = 'prevPages()'>&laquo;</a>";
+
   for (let i = 1; i < pageCount; i++) {
     a = document.createElement("a");
     a.innerHTML = i;
-    // a.ariaDisabled = "tuesomething";
     a.onclick = () => {
       dividePages(i);
     };
-    console.log(a);
     pagination.appendChild(a);
   }
   a = document.createElement("a");
   a.innerHTML = "&raquo";
+  a.addEventListener("click", nextPages);
   pagination.appendChild(a);
+  pages = pagination.childNodes;
+  pagesLoopsCount = Math.ceil((pages.length - 2) / pagesPerContainer);
+  for (let i = pagesPerContainer + 1; i < pages.length - 1; i++) {
+    pages[i].style.display = "none";
+  }
 }
 
 function dividePages(pageNumber) {
-  console.log("Clicked");
+  let pagination = document.getElementsByClassName("pagination")[0];
+  let pagesList = pagination.childNodes;
+  let pressedPage = pagesList[pageNumber];
+  for (let i = 1; i < pagesList.length; i++) {
+    pagesList[i].classList.remove("active");
+  }
+  console.log(pressedPage);
   table.innerHTML = th;
+  pressedPage.className = "active";
+
   for (
     let i = (pageNumber - 1) * rowsPerPage;
     i < pageNumber * rowsPerPage;
@@ -122,6 +139,11 @@ async function getAPI() {
   localStorage.setItem("totalTasks", totalTasks);
   localStorage.setItem("nextID", nextID);
   paging();
+  // dividePages(
+  //   document.getElementsByClassName("pagination")[0].firstElementChild
+  //     .nextElementSibling
+  // );
+
   dividePages(1);
 }
 
@@ -250,7 +272,6 @@ function searchTask() {
   table.innerHTML = allElements;
   let tasksDescription = document.getElementsByClassName("todo");
   let searchValue = document.getElementsByClassName("search-val")[0].value;
-
   let tableNewElements = "";
   let elementsCount = 0;
   for (let element of tasksDescription) {
@@ -267,6 +288,12 @@ function searchTask() {
     "<tr class='header'><td>ID</td><td>TODO Description</td><td>User ID</td><td>Status</td><td>Actions</td></tr>";
 
   table.innerHTML = table.innerHTML + tableNewElements;
+
+  paging();
+  if (tableNewElements === "") {
+    return;
+  }
+  dividePages(1);
 }
 
 function undone(pressedButton) {
@@ -285,4 +312,47 @@ function undone(pressedButton) {
   allElements = table.innerHTML;
   localStorage.setItem("tableData", allElements);
   localStorage.setItem("totalTasks", totalTasks);
+}
+
+function nextPages() {
+  if (pagesLoopsCounter === pagesLoopsCount) {
+    return;
+  }
+  for (
+    let i = (pagesLoopsCounter - 1) * pagesPerContainer + 1;
+    i < pagesLoopsCounter * pagesPerContainer + 1;
+    i++
+  ) {
+    pages[i].style.display = "none";
+  }
+  for (
+    let i = pagesLoopsCounter * pagesPerContainer + 1;
+    i < (pagesLoopsCounter + 1) * pagesPerContainer + 1;
+    i++
+  ) {
+    pages[i].style.display = "block";
+  }
+  pagesLoopsCounter++;
+}
+
+function prevPages() {
+  if (pagesLoopsCounter === 0) {
+    return;
+  }
+
+  for (
+    let i = (pagesLoopsCounter - 1) * pagesPerContainer + 1;
+    i < pagesLoopsCounter * pagesPerContainer + 1;
+    i++
+  ) {
+    pages[i].style.display = "none";
+  }
+  pagesLoopsCounter--;
+  for (
+    let i = (pagesLoopsCounter - 1) * pagesPerContainer + 1;
+    i < pagesLoopsCounter * pagesPerContainer + 1;
+    i++
+  ) {
+    pages[i].style.display = "block";
+  }
 }

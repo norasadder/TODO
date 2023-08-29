@@ -116,9 +116,10 @@ th {
   text-decoration: none;
   font-size: 1.2rem;
   cursor: pointer;
+  background-color: transparent;
 }
 
-.pagination a:active {
+.pagination a.active {
   background-color: rgb(48, 50, 51);
   color: white;
 }
