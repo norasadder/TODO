@@ -109,6 +109,30 @@ footer {
   font-size: 1.25rem;
 }
 
+#snackbar {
+  display: none;
+  width: 20%;
+  background-color: #333;
+  color: #fff;
+  font-size: 1.2rem;
+  text-align: center;
+  border-radius: 2px;
+  padding: 10px;
+  position: fixed;
+  z-index: 1;
+  left: 40%;
+  bottom: 30px;
+}
+
+/* Show the snackbar when clicking on a button (class added with JavaScript) */
+#snackbar.show {
+  visibility: visible; /* Show the snackbar */
+  /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
+  However, delay the fade out process for 2.5 seconds */
+  -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+  animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
 @media all and (max-width: 1000px) {
   form {
     width: 60%;

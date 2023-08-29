@@ -188,6 +188,11 @@ function addTask() {
     totalTasks++;
     document.getElementById("totalTasks").innerHTML = totalTasks;
     allElements = table.innerHTML;
+    let snackbar = document.getElementById("snackbar");
+    snackbar.style.display = "block";
+    setTimeout(() => {
+      snackbar.style.display = "none";
+    }, 2000);
     localStorage.setItem("tableData", allElements);
     localStorage.setItem("totalTasks", totalTasks);
     localStorage.setItem("nextID", nextID);
