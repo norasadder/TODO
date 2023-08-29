@@ -4,7 +4,7 @@ let nextID;
 getAPI();
 
 async function getAPI() {
-  let response = await fetch("https://dummyjson.com/todos");
+  let response = await fetch("https://dummyjson.com/todos?limit=150");
   let result = await response.json();
 
   let todoArr = result.todos;
@@ -32,6 +32,9 @@ async function getAPI() {
     if (TODOelement["completed"] == true) {
       status.innerHTML = "";
       status.style.backgroundImage = "url('checkmark.png')";
+      ID.style.textDecoration = "line-through";
+      todo.style.textDecoration = "line-through";
+      userID.style.textDecoration = "line-through";
     } else {
       status.innerHTML = "Pending";
     }
