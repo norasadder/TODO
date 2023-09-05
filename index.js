@@ -1,3 +1,4 @@
+//TODO: Consider using `const` instead of `let` for variables that won't be reassigned
 let totalTasks = 0;
 let allElements;
 let nextID;
@@ -66,7 +67,9 @@ function dividePages(pageNumber) {
 getAPI();
 
 async function getAPI() {
+  //TODO: adding a loading indicator to the list on data load is a good idea
   let response = await fetch("https://dummyjson.com/todos?limit=150");
+  //TODO: `.json` might fail, you must put this code in a try-catch and handle any error
   let result = await response.json();
 
   let todoArr = result.todos;
@@ -74,7 +77,9 @@ async function getAPI() {
   let row, ID, todo, userID, status;
   let actions, actionsDiv, deleteButton, doneButton;
   table = document.getElementById("TODO-List");
+  //TODO: your variables must be in a consistent state (camelCase) and not mixed (snake_case)
   for (let TODOelement of todoArr) {
+    //TODO: ID is only used within the loop, so it should be declared within the loop
     ID = document.createElement("td");
     ID.innerHTML = TODOelement["id"];
     ID.className = "ID";
@@ -90,8 +95,10 @@ async function getAPI() {
     status = document.createElement("td");
     status.className = "status";
 
+    //TODO: this is a good place to use a ternary operator (status.innerHTML = TODOelement["completed"] ? "" : "Pending")
     if (TODOelement["completed"] == true) {
       status.innerHTML = "";
+      //TODO: instead of updating the style here, you better create classes in the CSS file and add/remove them here
       status.style.backgroundImage = "url('checkmark.png')";
       ID.style.textDecoration = "line-through";
       todo.style.textDecoration = "line-through";
@@ -113,6 +120,7 @@ async function getAPI() {
     deleteButton.className = "deleteButton";
     deleteButton.addEventListener("click", deleteTask);
     doneButton = document.createElement("button");
+    //TODO: doneButton.innerHTML = status.innerHTML === "" ? "Undone" : "Done";
     if (status.innerHTML === "") {
       doneButton.innerHTML = "Undone";
     } else {
@@ -147,6 +155,7 @@ async function getAPI() {
   dividePages(1);
 }
 
+//TODO: this is not used anywhere, why?
 function getTableData() {
   allElements = localStorage.getItem("tableData");
   totalTasks = localStorage.getItem("totalTasks");
@@ -356,3 +365,48 @@ function prevPages() {
     pages[i].style.display = "block";
   }
 }
+
+
+
+/**
+ * ---------------------- Tamer ---------------------- 
+ */
+//TODO: Here how i would create this task
+function loadData () {
+  //check if data exists in localStorage
+  //if yes, return it
+  //if no, run the fetch, pass the data to `saveData` function and return the result.
+}
+
+function saveData (data) {
+  //save the data in localStorage
+}
+
+function deleteHandler(id) {
+  //i will get the task by its passed_id then i will delete it from the list and from the localStorage
+}
+
+function toggleHandler(id) {
+  //i will get the task by its passed_id then i will toggle its status and save it in the localStorage
+}
+
+function createTaskElement(task) {
+  //i will create the task element and return it
+}
+
+function createTaskList(tasks) {
+  //i will create the list of tasks and return it
+  //`createTaskElement` will be used to create each element
+}
+
+function updateTableData(element) {
+  //i will replace the data value with the passed element
+}
+
+async function startupFunction() {
+  const data = await loadData();
+  const tasksList = createTaskList(data);
+  updateTableData(tasksList);
+}
+
+startupFunction();
