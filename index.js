@@ -1,35 +1,27 @@
-//TODO: Consider using `const` instead of `let` for variables that won't be reassigned
-let totalTasks = 0;
-let allElements;
 let nextID;
-let rowsPerPage = 5;
-let pagesPerContainer = 5;
+const rowsPerPage = 5;
+const pagesPerContainer = 5;
 let table;
-let rowCount, pageCount;
-let tr = [];
-let th;
+let tasks;
 let pagesLoopsCounter = 1;
 let pagesLoopsCount;
 let pages = [];
+let currentPage;
+const LOCAL_STORAGE_ALL_TASKS = "allTasks";
+const LOCAL_STORAGE_NEXT_ID = "nextID";
 
-function paging() {
-  rowCount = table.rows.length;
-  let tableHead = table.rows[0];
-  th = tableHead ? table.rows[0].outerHTML : "";
-  pageCount = Math.ceil(rowCount / rowsPerPage);
-
-  for (i = 1, ii = 0; i < rowCount; i++, ii++) {
-    tr[ii] = table.rows[i].outerHTML;
-  }
-
+function paging(tasksArr = tasks) {
+  pagesLoopsCounter = 1;
+  const rowCount = tasksArr.length;
+  const pageCount = Math.ceil(rowCount / rowsPerPage);
   pagination = document.getElementsByClassName("pagination")[0];
   pagination.innerHTML = "<a onclick = 'prevPages()'>&laquo;</a>";
 
-  for (let i = 1; i < pageCount; i++) {
+  for (let i = 1; i <= pageCount; i++) {
     a = document.createElement("a");
     a.innerHTML = i;
     a.onclick = () => {
-      dividePages(i);
+      dividePages(i, tasksArr);
     };
     pagination.appendChild(a);
   }
@@ -39,288 +31,155 @@ function paging() {
   pagination.appendChild(a);
   pages = pagination.childNodes;
   pagesLoopsCount = Math.ceil((pages.length - 2) / pagesPerContainer);
-  for (let i = pagesPerContainer + 1; i < pages.length - 1; i++) {
+}
+
+function dividePages(pageNumber, tasksArr = tasks) {
+  currentPage = pageNumber;
+  let pressedPage = pages[pageNumber];
+  pagesLoopsCounter = Math.ceil(pageNumber / pagesPerContainer);
+  for (let i = 1; i < pages.length - 1; i++) {
     pages[i].style.display = "none";
   }
-}
-
-function dividePages(pageNumber) {
-  let pagination = document.getElementsByClassName("pagination")[0];
-  let pagesList = pagination.childNodes;
-  let pressedPage = pagesList[pageNumber];
-  for (let i = 1; i < pagesList.length; i++) {
-    pagesList[i].classList.remove("active");
-  }
-  console.log(pressedPage);
-  table.innerHTML = th;
-  pressedPage.className = "active";
 
   for (
-    let i = (pageNumber - 1) * rowsPerPage;
-    i < pageNumber * rowsPerPage;
+    let i = (pagesLoopsCounter - 1) * pagesPerContainer + 1;
+    i < pagesLoopsCounter * pagesPerContainer + 1 && i < pages.length - 1;
     i++
   ) {
-    table.innerHTML = table.innerHTML + tr[i];
+    pages[i].style.display = "block";
   }
+  for (let i = 1; i < pages.length; i++) {
+    pages[i].classList.remove("active");
+  }
+  pressedPage.className = "active";
+  updateTableData(
+    tasksArr.slice((pageNumber - 1) * rowsPerPage, pageNumber * rowsPerPage)
+  );
 }
 
-getAPI();
-
-async function getAPI() {
+async function getDataFromAPI() {
   //TODO: adding a loading indicator to the list on data load is a good idea
-  let response = await fetch("https://dummyjson.com/todos?limit=150");
-  //TODO: `.json` might fail, you must put this code in a try-catch and handle any error
-  let result = await response.json();
-
-  let todoArr = result.todos;
-
-  let row, ID, todo, userID, status;
-  let actions, actionsDiv, deleteButton, doneButton;
-  table = document.getElementById("TODO-List");
-  //TODO: your variables must be in a consistent state (camelCase) and not mixed (snake_case)
-  for (let TODOelement of todoArr) {
-    //TODO: ID is only used within the loop, so it should be declared within the loop
-    ID = document.createElement("td");
-    ID.innerHTML = TODOelement["id"];
-    ID.className = "ID";
-
-    todo = document.createElement("td");
-    todo.innerHTML = TODOelement["todo"];
-    todo.className = "todo";
-
-    userID = document.createElement("td");
-    userID.innerHTML = TODOelement["userId"];
-    userID.className = "userID";
-
-    status = document.createElement("td");
-    status.className = "status";
-
-    //TODO: this is a good place to use a ternary operator (status.innerHTML = TODOelement["completed"] ? "" : "Pending")
-    if (TODOelement["completed"] == true) {
-      status.innerHTML = "";
-      //TODO: instead of updating the style here, you better create classes in the CSS file and add/remove them here
-      status.style.backgroundImage = "url('checkmark.png')";
-      ID.style.textDecoration = "line-through";
-      todo.style.textDecoration = "line-through";
-      userID.style.textDecoration = "line-through";
-    } else {
-      status.innerHTML = "Pending";
-    }
-
-    row = document.createElement("tr");
-    row.appendChild(ID);
-    row.appendChild(todo);
-    row.appendChild(userID);
-    row.appendChild(status);
-
-    actions = document.createElement("td");
-    actionsDiv = document.createElement("div");
-    deleteButton = document.createElement("button");
-    deleteButton.innerHTML = "Delete";
-    deleteButton.className = "deleteButton";
-    deleteButton.addEventListener("click", deleteTask);
-    doneButton = document.createElement("button");
-    //TODO: doneButton.innerHTML = status.innerHTML === "" ? "Undone" : "Done";
-    if (status.innerHTML === "") {
-      doneButton.innerHTML = "Undone";
-    } else {
-      doneButton.innerHTML = "Done";
-    }
-    doneButton.className = "doneButton";
-    doneButton.addEventListener("click", doneUndone);
-
-    actionsDiv.appendChild(deleteButton);
-    actionsDiv.appendChild(doneButton);
-
-    actionsDiv.className = "actions";
-
-    actions.appendChild(actionsDiv);
-    row.appendChild(actions);
-    table.appendChild(row);
+  const response = await fetch("https://dummyjson.com/todos?limit=150");
+  try {
+    const result = await response.json();
+    tasks = result.todos;
+    nextID = result.total + 1;
+    return { tasks, nextID };
+  } catch (error) {
+    throw error;
   }
-
-  totalTasks = result.total;
-  document.getElementById("totalTasks").innerHTML = totalTasks;
-  allElements = table.innerHTML;
-  nextID = totalTasks + 1;
-  localStorage.setItem("tableData", allElements);
-  localStorage.setItem("totalTasks", totalTasks);
-  localStorage.setItem("nextID", nextID);
-  paging();
-  // dividePages(
-  //   document.getElementsByClassName("pagination")[0].firstElementChild
-  //     .nextElementSibling
-  // );
-
-  dividePages(1);
-}
-
-//TODO: this is not used anywhere, why?
-function getTableData() {
-  allElements = localStorage.getItem("tableData");
-  totalTasks = localStorage.getItem("totalTasks");
-  nextID = localStorage.getItem("nextID");
-  table = document.getElementById("TODO-List");
-  //   console.log(allElements);
-  table.innerHTML = allElements;
-  document.getElementById("totalTasks").innerHTML = totalTasks;
-  //   document.getElementById("addButton").addEventListener("click", addTask);
-  deleteButtonsArr = document.getElementsByClassName("deleteButton");
-  for (let deleteBTN of deleteButtonsArr)
-    deleteBTN.addEventListener("click", deleteTask);
-
-  doneButtonsArr = document.getElementsByClassName("doneButton");
-  for (let doneBTN of doneButtonsArr)
-    doneBTN.addEventListener("click", completeTask);
-
-  paging();
-  dividePages(1);
 }
 
 function deleteTask() {
-  let rowIndex = this.parentNode.parentNode.parentNode.rowIndex;
+  const rowIndex = this.parentNode.parentNode.parentNode.rowIndex;
   if (confirm("are you sure you want to delete this task?") === true) {
     table.deleteRow(rowIndex);
-    totalTasks -= 1;
-    document.getElementById("totalTasks").innerHTML = totalTasks;
-    allElements = table.innerHTML;
-    localStorage.setItem("tableData", allElements);
-    localStorage.setItem("totalTasks", totalTasks);
+    tasks.splice((currentPage - 1) * pagesPerContainer + rowIndex - 1, 1);
+    document.getElementById("totalTasks").innerHTML = tasks.length;
+    console.log(rowIndex, currentPage, pages);
+    const nextDividePage =
+      rowIndex === 1 && currentPage === pages.length - 2
+        ? currentPage - 1
+        : currentPage;
+    paging();
+    dividePages(nextDividePage);
+    saveData({ tasks, nextID });
   }
 }
 
 function doneUndone() {
-  let row = this.parentNode.parentNode.parentNode;
-  let doneButton = row.getElementsByClassName("doneButton")[0];
+  const row = this.parentNode.parentNode.parentNode;
+  const rowIndex = row.rowIndex;
+  const doneButton = row.getElementsByClassName("doneButton")[0];
   if (doneButton.innerHTML === "Done") {
     completeTask(this);
+    tasks[
+      (currentPage - 1) * pagesPerContainer + rowIndex - 1
+    ].completed = true;
   } else {
     undone(this);
+    tasks[
+      (currentPage - 1) * pagesPerContainer + rowIndex - 1
+    ].completed = false;
   }
+  saveData({ tasks, nextID });
 }
 
 function completeTask(pressedButton) {
-  let row = pressedButton.parentNode.parentNode.parentNode;
-  let idCell = row.getElementsByClassName("ID")[0];
-  let descCell = row.getElementsByClassName("todo")[0];
-  let uesrIDCell = row.getElementsByClassName("userID")[0];
-  let statusCell = row.getElementsByClassName("status")[0];
-  let doneButton = row.getElementsByClassName("doneButton")[0];
+  const row = pressedButton.parentNode.parentNode.parentNode;
+  row.getElementsByClassName("ID")[0].classList.add("line-through");
+  row.getElementsByClassName("todo")[0].classList.add("line-through");
+  row.getElementsByClassName("userID")[0].classList.add("line-through");
+  const statusCell = row.getElementsByClassName("status")[0];
+  const doneButton = row.getElementsByClassName("doneButton")[0];
   doneButton.innerHTML = "Undone";
   statusCell.innerHTML = "";
-  idCell.style.textDecoration = "line-through";
-  descCell.style.textDecoration = "line-through";
-  uesrIDCell.style.textDecoration = "line-through";
-  statusCell.style.backgroundImage = "url('checkmark.png')";
-  allElements = table.innerHTML;
-  localStorage.setItem("tableData", allElements);
-  localStorage.setItem("totalTasks", totalTasks);
+  statusCell.classList.add("checkMark");
 }
 
 function addTask() {
-  let taskDescription = document.getElementsByClassName("add-task")[0].value;
+  const taskDescription = document.getElementsByClassName("add-task")[0].value;
   if (taskDescription === "") {
     alert("empty field");
   } else {
-    let row, ID, todo, userID, status;
-    let actions, actionsDiv, deleteButton, doneButton;
-    ID = document.createElement("td");
-    ID.innerHTML = nextID;
-    ID.className = "ID";
+    table.appendChild(createTaskRow(nextID, taskDescription, 33, false));
+    tasks.push({
+      id: nextID,
+      todo: taskDescription,
+      completed: false,
+      userId: 33,
+    });
+    document.getElementById("totalTasks").innerHTML = tasks.length;
     nextID++;
-    todo = document.createElement("td");
-    todo.innerHTML = taskDescription;
-    todo.className = "todo";
-    userID = document.createElement("td");
-    userID.innerHTML = 33;
-    userID.className = "userID";
-    status = document.createElement("td");
-    status.className = "status";
-    status.innerHTML = "Pending";
-    row = document.createElement("tr");
-    row.appendChild(ID);
-    row.appendChild(todo);
-    row.appendChild(userID);
-    row.appendChild(status);
 
-    actions = document.createElement("td");
-    actionsDiv = document.createElement("div");
-    deleteButton = document.createElement("button");
-    deleteButton.innerHTML = "Delete";
-    deleteButton.className = "deleteButton";
-    deleteButton.addEventListener("click", deleteTask);
-    doneButton = document.createElement("button");
-    doneButton.innerHTML = "Done";
-    doneButton.className = "doneButton";
-    doneButton.addEventListener("click", doneUndone);
-
-    actionsDiv.appendChild(deleteButton);
-    actionsDiv.appendChild(doneButton);
-
-    actionsDiv.className = "actions";
-
-    actions.appendChild(actionsDiv);
-    row.appendChild(actions);
-    table.appendChild(row);
-
-    totalTasks++;
-    document.getElementById("totalTasks").innerHTML = totalTasks;
-    allElements = table.innerHTML;
-    let snackbar = document.getElementById("snackbar");
+    const snackbar = document.getElementById("snackbar");
     snackbar.style.display = "block";
     setTimeout(() => {
       snackbar.style.display = "none";
     }, 2000);
-    localStorage.setItem("tableData", allElements);
-    localStorage.setItem("totalTasks", totalTasks);
-    localStorage.setItem("nextID", nextID);
+    paging();
+    dividePages(Math.ceil(tasks.length / rowsPerPage));
+    saveData({ tasks, nextID });
   }
 }
 
 function searchTask() {
-  table.innerHTML = allElements;
-  let tasksDescription = document.getElementsByClassName("todo");
-  let searchValue = document.getElementsByClassName("search-val")[0].value;
-  let tableNewElements = "";
-  let elementsCount = 0;
-  for (let element of tasksDescription) {
-    if (element.innerHTML.includes(searchValue)) {
-      elementsCount++;
-      let r = element.parentNode.innerHTML;
-      console.log(r);
-      tableNewElements = tableNewElements + "<tr>" + r + "</tr>";
-    }
-  }
-  document.getElementById("totalTasks").innerHTML = elementsCount;
-
-  table.innerHTML =
-    "<tr class='header'><td>ID</td><td>TODO Description</td><td>User ID</td><td>Status</td><td>Actions</td></tr>";
-
-  table.innerHTML = table.innerHTML + tableNewElements;
-
-  paging();
-  if (tableNewElements === "") {
+  const searchValue = document.getElementsByClassName("search-val")[0].value;
+  if (searchValue === "") {
+    updateTableData(tasks);
+    paging();
+    dividePages(1);
     return;
   }
-  dividePages(1);
+  let tempTasks = [];
+  let elementsCount = 0;
+  for (let task of tasks) {
+    if (task.todo.includes(searchValue)) {
+      tempTasks.push(task);
+      elementsCount++;
+    }
+  }
+  updateTableData(tempTasks);
+  document.getElementById("totalTasks").innerHTML = elementsCount;
+
+  paging(tempTasks);
+  if (tempTasks === null) {
+    return;
+  }
+
+  dividePages(1, tempTasks);
 }
 
 function undone(pressedButton) {
-  let row = pressedButton.parentNode.parentNode.parentNode;
-  let idCell = row.getElementsByClassName("ID")[0];
-  let descCell = row.getElementsByClassName("todo")[0];
-  let uesrIDCell = row.getElementsByClassName("userID")[0];
-  let statusCell = row.getElementsByClassName("status")[0];
-  let doneButton = row.getElementsByClassName("doneButton")[0];
+  const row = pressedButton.parentNode.parentNode.parentNode;
+  row.getElementsByClassName("ID")[0].classList.remove("line-through");
+  row.getElementsByClassName("todo")[0].classList.remove("line-through");
+  row.getElementsByClassName("userID")[0].classList.remove("line-through");
+  const statusCell = row.getElementsByClassName("status")[0];
+  const doneButton = row.getElementsByClassName("doneButton")[0];
   doneButton.innerHTML = "Done";
   statusCell.innerHTML = "Pending";
-  idCell.style.textDecoration = "none";
-  descCell.style.textDecoration = "none";
-  uesrIDCell.style.textDecoration = "none";
-  statusCell.style.backgroundImage = "";
-  allElements = table.innerHTML;
-  localStorage.setItem("tableData", allElements);
-  localStorage.setItem("totalTasks", totalTasks);
+  statusCell.classList.remove("checkMark");
 }
 
 function nextPages() {
@@ -336,7 +195,7 @@ function nextPages() {
   }
   for (
     let i = pagesLoopsCounter * pagesPerContainer + 1;
-    i < (pagesLoopsCounter + 1) * pagesPerContainer + 1;
+    i < (pagesLoopsCounter + 1) * pagesPerContainer + 1 && i < pages.length - 1;
     i++
   ) {
     pages[i].style.display = "block";
@@ -345,15 +204,16 @@ function nextPages() {
 }
 
 function prevPages() {
-  if (pagesLoopsCounter === 0) {
+  if (pagesLoopsCounter === 1) {
     return;
   }
 
   for (
     let i = (pagesLoopsCounter - 1) * pagesPerContainer + 1;
-    i < pagesLoopsCounter * pagesPerContainer + 1;
+    i < pagesLoopsCounter * pagesPerContainer + 1 && i < pages.length - 1;
     i++
   ) {
+    console.log(i);
     pages[i].style.display = "none";
   }
   pagesLoopsCounter--;
@@ -366,47 +226,98 @@ function prevPages() {
   }
 }
 
+async function loadData() {
+  // localStorage.clear();
+  let result;
+  document.getElementsByClassName("loader-container")[0].style.display = "flex";
+  if (
+    localStorage.getItem("allTasks") !== null &&
+    localStorage.getItem("nextID") !== null
+  ) {
+    tasks = JSON.parse(localStorage.getItem("allTasks"));
+    nextID = localStorage.getItem("nextID");
+    result = { tasks, nextID };
+  } else {
+    result = await getDataFromAPI();
+    saveData(result);
+  }
 
+  document.getElementsByClassName("loader-container")[0].style.display = "none";
 
-/**
- * ---------------------- Tamer ---------------------- 
- */
-//TODO: Here how i would create this task
-function loadData () {
-  //check if data exists in localStorage
-  //if yes, return it
-  //if no, run the fetch, pass the data to `saveData` function and return the result.
+  return result;
 }
 
-function saveData (data) {
-  //save the data in localStorage
+function saveData(data) {
+  localStorage.setItem(LOCAL_STORAGE_ALL_TASKS, JSON.stringify(data.tasks));
+  localStorage.setItem(LOCAL_STORAGE_NEXT_ID, data.nextID);
 }
 
-function deleteHandler(id) {
-  //i will get the task by its passed_id then i will delete it from the list and from the localStorage
+function createTaskRow(...values) {
+  const ID = document.createElement("td");
+  ID.innerHTML = values[0];
+  ID.className = "ID";
+
+  const todo = document.createElement("td");
+  todo.innerHTML = values[1];
+  todo.className = "todo";
+
+  const userID = document.createElement("td");
+  userID.innerHTML = values[2];
+  userID.className = "userID";
+
+  const status = document.createElement("td");
+  status.className = "status";
+
+  const row = document.createElement("tr");
+
+  const actions = document.createElement("td");
+  const actionsDiv = document.createElement("div");
+  const deleteButton = document.createElement("button");
+  deleteButton.innerHTML = "Delete";
+  deleteButton.className = "deleteButton";
+  deleteButton.addEventListener("click", deleteTask);
+  const doneButton = document.createElement("button");
+
+  doneButton.className = "doneButton";
+  doneButton.addEventListener("click", doneUndone);
+
+  row.appendChild(ID);
+  row.appendChild(todo);
+  row.appendChild(userID);
+  row.appendChild(status);
+  actionsDiv.appendChild(deleteButton);
+  actionsDiv.appendChild(doneButton);
+
+  actionsDiv.className = "actions";
+
+  actions.appendChild(actionsDiv);
+  row.appendChild(actions);
+  values[3] === true ? completeTask(doneButton) : undone(doneButton);
+  // table.appendChild(row);
+  return row;
 }
 
-function toggleHandler(id) {
-  //i will get the task by its passed_id then i will toggle its status and save it in the localStorage
-}
-
-function createTaskElement(task) {
-  //i will create the task element and return it
-}
-
-function createTaskList(tasks) {
-  //i will create the list of tasks and return it
-  //`createTaskElement` will be used to create each element
-}
-
-function updateTableData(element) {
-  //i will replace the data value with the passed element
+function updateTableData(tasksList) {
+  table.innerHTML =
+    "<tr class='header'><td>ID</td><td>TODO Description</td><td>User ID</td><td>Status</td><td>Actions</td></tr>";
+  for (let taskElement of tasksList) {
+    table.appendChild(
+      createTaskRow(
+        taskElement["id"],
+        taskElement["todo"],
+        taskElement["userId"],
+        taskElement["completed"]
+      )
+    );
+  }
 }
 
 async function startupFunction() {
   const data = await loadData();
-  const tasksList = createTaskList(data);
-  updateTableData(tasksList);
+  tasks = data.tasks;
+  table = document.getElementById("TODO-List");
+  updateTableData(tasks);
+  document.getElementById("totalTasks").innerHTML = tasks.length;
+  paging();
+  dividePages(1);
 }
-
-startupFunction();

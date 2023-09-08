@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="index.css" type="text/css" />
     <script src="index.js"></script>
   </head>
-  <body>
+  <body onload="startupFunction()">
     <h1>TODO List</h1>
 
     <form>
@@ -29,6 +29,10 @@
         oninput="searchTask()"
       />
     </form>
+
+    <div class="loader-container" id="loader-container">
+      <div class="loader"></div>
+    </div>
 
     <table id="TODO-List">
       <thead>
